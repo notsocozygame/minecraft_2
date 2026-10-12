@@ -1,0 +1,33 @@
+name: Build Minecraft 2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libsqlite3-dev zlib1g-dev libssl-dev libffi-dev libgdbm-dev libreadline-dev libncursesw5-dev libdb5.3-dev libgdbm-compat-dev libx11-dev libxext-dev libxrender-dev
+          pip install --upgrade pip setuptools buildozer cython
+
+      - name: Build Android APK
+        run: |
+          buildozer android release || buildozer android debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: minecraft2-android-apk
+          path: bin/*.apk
